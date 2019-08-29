@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -48,9 +49,9 @@
     <div class="container">
 
         <form action="http://localhost/xmldestinadas/index.php" method="post">
-            <input type="text" id="token" name="token" value="<?php if(isset($_POST['token'])) echo $_POST['token']; ?>"  placeholder="Token.." />
-            <input type="text" name="login" value="<?php if(isset($_POST['login'])) echo $_POST['login'];?>" placeholder="E-mail">
-            <input type="text" name="password" value="<?php if(isset($_POST['password'])) echo $_POST['password'];?>" placeholder="Senha">
+            <input type="hidden" id="token" name="token" value="<?php if(isset($_POST['token'])) echo $_POST['token']; ?>"  placeholder="Token.." />
+            <input type="hidden" name="login" value="<?php if(isset($_POST['login'])) echo $_POST['login'];?>" placeholder="E-mail">
+            <input type="hidden" name="password" value="<?php if(isset($_POST['password'])) echo $_POST['password'];?>" placeholder="Senha">
 
             
                 <div class="row">
@@ -89,15 +90,18 @@
                 </div>
                 <div class="row">
                     <input type="submit" value="Consultar">
-
+                </div>
 
 
                     <div style="overflow-x:auto;">
                     <?php
+            
 
 
-                    if(isset($_POST['login']) && !empty($_POST['token'] && !empty($_POST['login'])))
+                    if(!empty($_POST['login']) && !empty($_POST['token']) && !empty($_POST['login']) && !empty($_POST['data-ini']) && !empty($_POST['data-fim']) && !empty($_POST['mod'])) 
                     {
+                        
+
                         $token    = $_POST['token'];
                         $data_ini = date("Y-m-d", strtotime($_POST['data-ini']));
                         $data_fim = date("Y-m-d", strtotime($_POST['data-fim']));
@@ -221,8 +225,10 @@
                             }
                             echo '</table>';
                         }
-                    }?>
-                    </div>
+                    }   
+                        
+                        ?>
+                        
                 </div>
             
         </form>
@@ -234,38 +240,80 @@
     
     <div class="container">
         <form action="http://localhost/xmldestinadas/index.php" method="post">
-            <input type="text" id="token" name="token" value="<?php if(isset($_POST['token'])) echo $_POST['token']; ?>"  placeholder="Token.." />
-            <input type="text" name="login" value="<?php if(isset($_POST['login'])) echo $_POST['login'];?>" placeholder="E-mail">
-            <input type="text" name="password" value="<?php if(isset($_POST['password'])) echo $_POST['password'];?>" placeholder="Senha">
+            <input type="hidden" id="token" name="token" value="<?php if(isset($_POST['token'])) echo $_POST['token']; ?>"  placeholder="Token.." />
+            <input type="hidden" name="login" value="<?php if(isset($_POST['login'])) echo $_POST['login'];?>" placeholder="E-mail">
+            <input type="hidden" name="password" value="<?php if(isset($_POST['password'])) echo $_POST['password'];?>" placeholder="Senha">
             <div class="row">
-                <div class="col-10">
-                <label for="token">Token:</label>
+                <div class="col-25">
+                    <label for="xml">Informar xml:</label>
                 </div>
-                <div class="col-90">
-                <input type="text" id="token" name="tokens" value="<?php if(isset($_POST['token'])) echo $_POST['token']; ?>"  placeholder="Token.." />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-10">
-                <label for="login">Login:</label>
-                </div>
-                <div class="col-50">
-                <input type="text" name="login_" value="<?php if(isset($_POST['login'])) echo $_POST['login'];?>" placeholder="E-mail">
-                </div>
-                
-                <div class="col-5">
-                    <label for="password">Senha:</label> 
-                </div>
-                <div class="col-30">
-                    <input type="password" name="passworsd" value="<?php if(isset($_POST['password'])) echo $_POST['password'];?>" placeholder="Senha">
+                <div class="col-75">
+                    <textarea id="xml" name="xml" placeholder="Informar o xml..." style="height:200px"></textarea>
                 </div>
             </div>
 
+            <div class="row">
+                <input type="submit" value="Enviar">
+            </div>
 
         </form>
+        <?php 
+
+
+                    if(!empty($_POST['login']) && !empty($_POST['token']) && !empty($_POST['password']) && !empty($_POST['xml']) && isset($_POST['xml'])) 
+                    {
+                        $request = md5( implode( $_POST ) );
+                        if(!isset( $_SESSION['last_request'] ) || $_SESSION['last_request'] != $request )
+                        {
+                        
+                        $_SESSION['last_request']  = $request;
+
+                        $auth = base64_encode($_POST['login'].':'.$_POST['password']);
+
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+
+
+                        curl_setopt_array($curl, array(
+                        CURLOPT_URL => "https://app.notasegura.com.br/api/invoices?token=".$_POST['token'],
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_ENCODING => "",
+                        CURLOPT_MAXREDIRS => 10,
+                        CURLOPT_TIMEOUT => 30,
+                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                        CURLOPT_CUSTOMREQUEST => "POST",
+                        CURLOPT_POSTFIELDS => "xml=".urlencode($_POST['xml']),
+                        CURLOPT_HTTPHEADER => array(
+                            "Accept: */*",
+                            "Accept-Encoding: gzip, deflate",
+                            "Authorization: Basic ".$auth,
+                            "Cache-Control: no-cache",
+                            "Connection: keep-alive",
+                            "Host: app.notasegura.com.br",
+                            "cache-control: no-cache"
+                        ),
+                        ));
+
+                        $response = curl_exec($curl);
+                        $err = curl_error($curl);
+                        curl_close($curl);
+
+
+                        if ($err) {
+                            echo "cURL Error #:" . $err;
+                        }else{
+                            $xml  = new SimpleXMLElement($response);
+                            echo "<script>alert('".substr($xml->message,0,-1)."'); 
+                            openTab('', 'Enviar-xml');</script>";
+                        }
+
+                    }
+                }
+                
+             ?>
     </div>
 </div>
-
 
 
 </body>
@@ -273,28 +321,29 @@
 
 
 <script>
+
     function openTab(evt, Name) {
 
-    var i, tabcontent, tablinks;
+        var i, tabcontent, tablinks;
 
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+
+        document.getElementById(Name).style.display = "block";
+        if(evt) evt.currentTarget.className += " active";
     }
-
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-
-    document.getElementById(Name).style.display = "block";
-    if(evt) evt.currentTarget.className += " active";
-    }
-
-    
 
     openTab('', 'Consulta-Notas');
+
+
     tablinks = document.getElementsByClassName("tablinks");
     tablinks[0].className = tablinks[0].className.replace("tablinks", "tablinks active");
 
@@ -307,6 +356,8 @@
             }
 
     }
+    
 </script>
+
 </html>
 

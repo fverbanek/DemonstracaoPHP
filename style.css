@@ -10,8 +10,8 @@ input { margin-bottom: 10px;}
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 5%;
+    margin-right: 5%;
   }
   
 
@@ -41,8 +41,8 @@ input { margin-bottom: 10px;}
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 5%;
+    margin-right: 5%;
 
   }
   .tabcontent {
@@ -54,8 +54,8 @@ input { margin-bottom: 10px;}
     animation: fadeEffect 1s; 
   }
   .container-token{
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 5%;
+    margin-right: 5%;
     border: 1px solid #ccc;
 
     padding: 6px 12px;
