@@ -1,4 +1,3 @@
-<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,10 +6,26 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Notas destinadas</title>
     <link rel="stylesheet" type="text/css" href="style.css"  />
-    <style>
 
-      
-    </style>
+    <script>
+        function openTab(evt, Name) {
+
+            var i, tabcontent, tablinks;
+
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            document.getElementById(Name).style.display = "block";
+            tablinks[evt].className += " active";
+        }
+    </script>
 </head>
 <body>
 <div class="container-token">
@@ -41,8 +56,8 @@
 </div>
 
 <div class="tab">
-    <button class="tablinks"  onclick="openTab(event, 'Consulta-Notas')">Consultar Notas</button>
-    <button class="tablinks" onclick="openTab(event, 'Enviar-xml')">Enviar xml</button>
+    <button class="tablinks"  onclick="openTab(0, 'Consulta-Notas')">Consultar Notas</button>
+    <button class="tablinks" onclick="openTab(1, 'Enviar-xml')">Enviar xml</button>
 </div>
 
 <div id="Consulta-Notas" class="tabcontent">
@@ -262,11 +277,7 @@
 
                     if(!empty($_POST['login']) && !empty($_POST['token']) && !empty($_POST['password']) && !empty($_POST['xml']) && isset($_POST['xml'])) 
                     {
-                        $request = md5( implode( $_POST ) );
-                        if(!isset( $_SESSION['last_request'] ) || $_SESSION['last_request'] != $request )
-                        {
-                        
-                        $_SESSION['last_request']  = $request;
+
 
                         $auth = base64_encode($_POST['login'].':'.$_POST['password']);
 
@@ -304,13 +315,10 @@
                             echo "cURL Error #:" . $err;
                         }else{
                             $xml  = new SimpleXMLElement($response);
-                            echo "<script>alert('".substr($xml->message,0,-1)."'); 
-                            openTab('', 'Enviar-xml');</script>";
+                            echo "<script>alert('".substr($xml->message,0,-1)."'); </script>";
                         }
-
+                        echo "<script>openTab(1, 'Enviar-xml')</script>";
                     }
-                }
-                
              ?>
     </div>
 </div>
@@ -321,32 +329,19 @@
 
 
 <script>
-
-    function openTab(evt, Name) {
-
-        var i, tabcontent, tablinks;
-
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
+    var tab,bbo,a;
 
 
-        document.getElementById(Name).style.display = "block";
-        if(evt) evt.currentTarget.className += " active";
+    tab = document.getElementsByClassName("tablinks");
+    for (a = 0; a < tab.length; a++) 
+        if(tab[a].className.search(/ active/) != -1) bbo = true;
+
+
+    
+    if(bbo != true)
+    {
+        openTab(0,'Consulta-Notas')
     }
-
-    openTab('', 'Consulta-Notas');
-
-
-    tablinks = document.getElementsByClassName("tablinks");
-    tablinks[0].className = tablinks[0].className.replace("tablinks", "tablinks active");
-
 
     function preencherCampo(valor,  campo) {
 
